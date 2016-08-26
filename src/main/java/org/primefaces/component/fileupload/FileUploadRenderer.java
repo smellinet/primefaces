@@ -219,12 +219,16 @@ public class FileUploadRenderer extends CoreRenderer {
         ResponseWriter writer = context.getResponseWriter();
         String clientId = fileUpload.getClientId(context);
         String cssClass = HTML.BUTTON_TEXT_ICON_LEFT_BUTTON_CLASS + " " + FileUpload.CHOOSE_BUTTON_CLASS;
-        if (disabled) {
+        String tabindex = (disabled) ? "-1" : "0";
+	if (disabled) {
             cssClass += " ui-state-disabled";
         }
 
         writer.startElement("span", null);
         writer.writeAttribute("class", cssClass, null);
+        writer.writeAttribute("tabindex", tabindex, null);
+        writer.writeAttribute("role", "button", null);
+        writer.writeAttribute("aria-labelledby", clientId + "_label", null);
 
         //button icon
         writer.startElement("span", null);
@@ -253,14 +257,13 @@ public class FileUploadRenderer extends CoreRenderer {
         writer.writeAttribute("type", "file", null);
         writer.writeAttribute("id", inputId , null);
         writer.writeAttribute("name", inputId, null);
+        writer.writeAttribute("tabindex", "-1", null);
 
         if (fileUpload.isMultiple()) writer.writeAttribute("multiple", "multiple", null);
         if (fileUpload.isDisabled()) writer.writeAttribute("disabled", "disabled", "disabled");
         if (fileUpload.getAccept() != null) writer.writeAttribute("accept", fileUpload.getAccept(), null);
         
         renderDynamicPassThruAttributes(context, fileUpload);
-        
-        writer.writeAttribute("aria-labelledby", clientId + "_label", null);
 
         writer.endElement("input");
     }
