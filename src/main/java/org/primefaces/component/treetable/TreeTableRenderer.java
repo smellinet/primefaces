@@ -41,7 +41,7 @@ import org.primefaces.context.RequestContext;
 import org.primefaces.model.SortOrder;
 import org.primefaces.model.TreeNode;
 import org.primefaces.model.TreeNodeComparator;
-import org.primefaces.renderkit.CoreRenderer;
+import org.primefaces.renderkit.DataRenderer;
 import org.primefaces.renderkit.RendererUtils;
 import org.primefaces.util.ComponentUtils;
 import org.primefaces.util.SharedStringBuilder;
@@ -49,7 +49,7 @@ import org.primefaces.util.TreeUtils;
 import org.primefaces.util.WidgetBuilder;
 import org.primefaces.visit.ResetInputVisitCallback;
 
-public class TreeTableRenderer extends CoreRenderer {
+public class TreeTableRenderer extends DataRenderer {
 
     private static final String SB_DECODE_SELECTION = TreeTableRenderer.class.getName() + "#decodeSelection";
     
@@ -159,6 +159,12 @@ public class TreeTableRenderer extends CoreRenderer {
         else if(tt.isCellEditRequest(context)) {
             encodeCellEdit(context, tt);
         }
+        else if(tt.isPaginationRequest(context)) {
+            int first = Integer.parseInt(params.get(clientId + "_first"));
+            int rows = Integer.parseInt(params.get(clientId + "_rows"));
+            TreeNode root = tt.getValue();
+            encodeNodeChildren(context, tt, root, first, first + rows);
+        } 
         else {
             encodeMarkup(context, tt);
             encodeScript(context, tt); 
@@ -196,6 +202,10 @@ public class TreeTableRenderer extends CoreRenderer {
             wb.attr("editable", true).attr("editMode", tt.getEditMode()).attr("cellSeparator", tt.getCellSeparator(), null);
         }
         
+        if(tt.isPaginator()) {
+            encodePaginatorConfig(context, tt, wb);
+        }
+        
         encodeClientBehaviors(context, tt);
 
         wb.finish();
@@ -206,6 +216,11 @@ public class TreeTableRenderer extends CoreRenderer {
 		String clientId = tt.getClientId(context);
         boolean scrollable = tt.isScrollable();
         TreeNode root = tt.getValue();
+        boolean hasPaginator = tt.isPaginator();
+        
+        if(hasPaginator) {
+            tt.calculateFirst();
+        }
         
         if(root.getRowKey() == null) {
             root.setRowKey("root");
@@ -308,8 +323,14 @@ public class TreeTableRenderer extends CoreRenderer {
     
     protected void encodeRegularMarkup(FacesContext context, TreeTable tt) throws IOException {
         ResponseWriter writer = context.getResponseWriter();
+        boolean hasPaginator = tt.isPaginator();
+        String paginatorPosition = tt.getPaginatorPosition();
         
         encodeFacet(context, tt, tt.getFacet("header"), TreeTable.HEADER_CLASS);
+        
+        if(tt.isPaginator() && !paginatorPosition.equalsIgnoreCase("bottom")) {
+            encodePaginatorMarkup(context, tt, "top");
+        }
                 
         writer.startElement("table", tt);
         writer.writeAttribute("role", "treegrid", null);
@@ -321,6 +342,10 @@ public class TreeTableRenderer extends CoreRenderer {
 		encodeTbody(context, tt, false);
         
 		writer.endElement("table");
+        
+        if(hasPaginator && !paginatorPosition.equalsIgnoreCase("top")) {
+            encodePaginatorMarkup(context, tt, "bottom");
+        }
         
         encodeFacet(context, tt, tt.getFacet("footer"), TreeTable.FOOTER_CLASS);
     }
@@ -409,7 +434,14 @@ public class TreeTableRenderer extends CoreRenderer {
         }
         
 		if(root != null) {
-            encodeNodeChildren(context, tt, root);
+            if(tt.isPaginator()) {
+                int first = tt.getFirst();
+                int rows = tt.getRows() == 0 ? tt.getRowCount() : tt.getRows();
+                encodeNodeChildren(context, tt, root, first, first + rows);
+            }
+            else {
+                encodeNodeChildren(context, tt, root);
+            }
 		}
 
         tt.setRowKey(null);
@@ -596,9 +628,13 @@ public class TreeTableRenderer extends CoreRenderer {
         
     protected void encodeNodeChildren(FacesContext context, TreeTable tt, TreeNode treeNode) throws IOException {
         int childCount = treeNode.getChildCount();
-        if(childCount > 0) {
+        this.encodeNodeChildren(context, tt, treeNode, 0, childCount);
+    }
+    
+    protected void encodeNodeChildren(FacesContext context, TreeTable tt, TreeNode treeNode, int first, int size) throws IOException {
+        if(size > 0) {
             List<TreeNode> children = treeNode.getChildren();
-            for(int i = 0; i < childCount; i++) {
+            for(int i = first; i < size; i++) {
                 encodeNode(context, tt, children.get(i));
             }
         }
