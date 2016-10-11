@@ -1178,6 +1178,12 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
                         $this.activate(menuitem);
                     }
                 }
+                else {
+                    var href = link.attr('href');
+                    if(href && href !== '#') {
+                        window.location.href = href;
+                    }
+                }
                 
                 e.preventDefault();
             });
