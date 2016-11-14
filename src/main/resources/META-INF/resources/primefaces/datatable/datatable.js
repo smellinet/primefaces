@@ -2674,6 +2674,11 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
             columnHeader = ui.helper.parent();
         }
         
+        var title = columnHeader.children('.ui-column-title');
+        if(PrimeFaces.env.isIE()) {
+            title.css('display', 'none');
+        }
+        
         var nextColumnHeader = columnHeader.nextAll(':visible:first');
         
         if(this.cfg.liveResize) {
@@ -2689,6 +2694,10 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
          
         var minWidth = parseInt(columnHeader.css('min-width'));
         minWidth = (minWidth == 0) ? 15 : minWidth;
+        
+        if(PrimeFaces.env.isIE()) {
+            title.css('display', '');
+        }
         
         if((newWidth > minWidth && nextColumnWidth > minWidth) || (expandMode && newWidth > minWidth)) {          
             if(expandMode) {
