@@ -3299,7 +3299,7 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
             options.filter('[value="' + columnHeader.index() + '_' + orderIndex + '"]').prop('selected', true);
         } 
     },
-    
+
     groupRows: function() {
         for(var i = 0; i < this.cfg.groupColumnIndexes.length; i++) {
             this.groupRow(this.cfg.groupColumnIndexes[i]);

@@ -1296,3 +1296,74 @@ import javax.faces.event.BehaviorEvent;
             this.setColumns(null);
         }
     }
+
+    public void restoreTableState() {
+        TableState ts = this.getTableState(false);
+        if(ts != null) {
+            if(this.isPaginator()) {
+                this.setFirst(ts.getFirst());
+                this.setRows(ts.getRows());
+            }
+
+            this.setMultiSortMeta(ts.getMultiSortMeta());
+            this.setValueExpression("sortBy", ts.getSortBy());
+            this.setSortOrder(ts.getSortOrder());
+            this.setSortFunction(ts.getSortFunction());
+            this.setSortField(ts.getSortField());
+
+            if(this.isSelectionEnabled()) {
+                this.selectedRowKeys = ts.getRowKeys();
+            }
+
+            this.setFilterBy(ts.getFilters());
+            this.setGlobalFilter(ts.getGlobalFilterValue());
+        }
+    }
+
+    public TableState getTableState(boolean create) {
+        FacesContext fc = this.getFacesContext();
+        Map<String,Object> sessionMap = fc.getExternalContext().getSessionMap();
+        Map<String,TableState> dtState = (Map) sessionMap.get(Constants.TABLE_STATE);
+        String stateKey = fc.getViewRoot().getViewId() + "_" + this.getClientId(fc);
+        TableState ts;
+
+        if(dtState == null) {
+            dtState = new HashMap<String,TableState>();
+            sessionMap.put(Constants.TABLE_STATE, dtState);
+        }
+
+        ts = dtState.get(stateKey);
+        if(ts == null && create) {
+            ts = new TableState();
+            dtState.put(stateKey, ts);
+        }
+
+        return ts;
+    }
+
+     String getGroupedColumnIndexes() {
+        List<UIColumn> columns = this.getColumns();
+        int size = columns.size();
+        boolean hasIndex = false;
+        if(size > 0) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for(int i = 0; i < size; i++) {
+                UIColumn column = columns.get(i);
+                if(column.isGroupRow()) {
+                    if(hasIndex) {
+                       sb.append(",");
+                    }
+
+                    sb.append(i);
+                    hasIndex = true;
+                }
+            }
+            sb.append("]");
+
+            return sb.toString();
+        }
+        return null;
+    }
+
+
