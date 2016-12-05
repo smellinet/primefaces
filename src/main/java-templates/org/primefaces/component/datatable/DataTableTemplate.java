@@ -6,6 +6,7 @@ import org.primefaces.component.row.Row;
 import org.primefaces.component.subtable.SubTable;
 import org.primefaces.component.contextmenu.ContextMenu;
 import org.primefaces.component.summaryrow.SummaryRow;
+import org.primefaces.component.headerrow.HeaderRow;
 import org.primefaces.context.RequestContext;
 import org.primefaces.util.Constants;
 import java.util.List;
@@ -877,6 +878,16 @@ import javax.faces.event.BehaviorEvent;
         return null;
     }
 
+    public HeaderRow getHeaderRow() {
+        for(UIComponent kid : getChildren()) {
+            if(kid.isRendered() && kid instanceof HeaderRow) {
+                return (HeaderRow) kid;
+            }
+        }
+
+        return null;
+    }
+
     private int columnsCount = -1;
     
     public int getColumnsCount() {
@@ -1295,50 +1306,6 @@ import javax.faces.event.BehaviorEvent;
             dynamicCols.setRowIndex(-1);
             this.setColumns(null);
         }
-    }
-
-    public void restoreTableState() {
-        TableState ts = this.getTableState(false);
-        if(ts != null) {
-            if(this.isPaginator()) {
-                this.setFirst(ts.getFirst());
-                this.setRows(ts.getRows());
-            }
-
-            this.setMultiSortMeta(ts.getMultiSortMeta());
-            this.setValueExpression("sortBy", ts.getSortBy());
-            this.setSortOrder(ts.getSortOrder());
-            this.setSortFunction(ts.getSortFunction());
-            this.setSortField(ts.getSortField());
-
-            if(this.isSelectionEnabled()) {
-                this.selectedRowKeys = ts.getRowKeys();
-            }
-
-            this.setFilterBy(ts.getFilters());
-            this.setGlobalFilter(ts.getGlobalFilterValue());
-        }
-    }
-
-    public TableState getTableState(boolean create) {
-        FacesContext fc = this.getFacesContext();
-        Map<String,Object> sessionMap = fc.getExternalContext().getSessionMap();
-        Map<String,TableState> dtState = (Map) sessionMap.get(Constants.TABLE_STATE);
-        String stateKey = fc.getViewRoot().getViewId() + "_" + this.getClientId(fc);
-        TableState ts;
-
-        if(dtState == null) {
-            dtState = new HashMap<String,TableState>();
-            sessionMap.put(Constants.TABLE_STATE, dtState);
-        }
-
-        ts = dtState.get(stateKey);
-        if(ts == null && create) {
-            ts = new TableState();
-            dtState.put(stateKey, ts);
-        }
-
-        return ts;
     }
 
      String getGroupedColumnIndexes() {
