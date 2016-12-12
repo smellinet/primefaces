@@ -156,6 +156,9 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
         this.ascMessage = PrimeFaces.getAriaLabel('datatable.sort.ASC');
         this.descMessage = PrimeFaces.getAriaLabel('datatable.sort.DESC');
         
+        //reflow dropdown
+        this.reflowDD = $(this.jqId + '_reflowDD');
+        
         if(this.cfg.multiSort) {
             this.sortMeta = [];
         }
@@ -190,6 +193,8 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
                         order: sortOrder
                     });
                 }
+                
+                $this.updateReflowDD(columnHeader, sortOrder);
             }
             else {
                 sortOrder = this.SORT_ORDER.UNSORTED;
@@ -266,13 +271,13 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
             if($this.cfg.scrollable) {
                 $(PrimeFaces.escapeClientId(columnHeader.attr('id') + '_clone')).trigger('focus');
             }
-
+            
+            $this.updateReflowDD(columnHeader, sortOrder);
         });
         
-        var reflowDD = $(this.jqId + '_reflowDD');
-        if(reflowDD && this.cfg.reflow) { 
-            PrimeFaces.skinSelect(reflowDD);
-            reflowDD.change(function(e) {
+        if(this.reflowDD && this.cfg.reflow) { 
+            PrimeFaces.skinSelect(this.reflowDD);
+            this.reflowDD.change(function(e) {
                 var arrVal = $(this).val().split('_'),
                     columnHeader = $this.sortableColumns.eq(parseInt(arrVal[0])),
                     sortOrder = parseInt(arrVal[1]);
@@ -3267,6 +3272,46 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
 
         if(hasNextPage) {
             this.fetchNextPage(newState);
+        }
+    },
+    
+    updateReflowDD: function(columnHeader, sortOrder) {
+        if(this.reflowDD && this.cfg.reflow) {
+            var options = this.reflowDD.children('option'),
+            orderIndex = sortOrder > 0 ? 0 : 1;
+       
+            options.filter(':selected').prop('selected', false);
+            options.filter('[value="' + columnHeader.index() + '_' + orderIndex + '"]').prop('selected', true);
+        } 
+    },
+    
+    groupRows: function() {
+        for(var i = 0; i < this.cfg.groupColumnIndexes.length; i++) {
+            this.groupRow(this.cfg.groupColumnIndexes[i]);
+        }
+    },
+    
+    groupRow: function(colIndex) {
+        var rows = this.tbody.children('tr');
+        var groupStartIndex = null, rowGroupCellData = null, rowGroupCount = null;
+        
+        for(var i = 0; i < rows.length; i++) {
+            var row = rows.eq(i);
+            var column = row.children('td').eq(colIndex);
+            var columnData = column.text();
+            if(rowGroupCellData != columnData) {                    
+                groupStartIndex = i;
+                rowGroupCellData = columnData;
+                rowGroupCount = 1;
+            }
+            else {
+                column.remove();
+                rowGroupCount++;
+            }
+            
+            if(groupStartIndex != null && rowGroupCount > 1) {
+                rows.eq(groupStartIndex).children('td').eq(colIndex).attr('rowspan', rowGroupCount);
+            }
         }
     }
 
