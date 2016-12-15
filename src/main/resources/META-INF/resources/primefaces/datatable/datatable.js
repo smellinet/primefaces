@@ -51,6 +51,11 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
             this.initReflow();
         }
         
+        if(this.cfg.groupColumnIndexes) {
+            this.groupRows();
+            this.bindToggleRowGroupEvents();
+        }
+        
         this.renderDeferred();
     },
     
@@ -102,6 +107,11 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
         
         if(this.cfg.reflow) {
             this.initReflow();
+        }
+        
+        if(this.cfg.groupColumnIndexes) {
+            this.groupRows();
+            this.bindToggleRowGroupEvents();
         }
     },
  
@@ -3313,6 +3323,28 @@ PrimeFaces.widget.DataTable = PrimeFaces.widget.DeferredWidget.extend({
                 rows.eq(groupStartIndex).children('td').eq(colIndex).attr('rowspan', rowGroupCount);
             }
         }
+    },
+    
+    bindToggleRowGroupEvents: function() {
+        var expandableRows = this.tbody.children('tr.ui-rowgroup-header'),
+            toggler = expandableRows.find('> td:first > a.ui-rowgroup-toggler');
+        
+        toggler.off('click.dataTable-rowgrouptoggler').on('click.dataTable-rowgrouptoggler', function(e) {
+           var link = $(this), 
+           togglerIcon = link.children('.ui-rowgroup-toggler-icon'),
+           parentRow = link.closest('tr.ui-rowgroup-header');
+           
+           if(togglerIcon.hasClass('ui-icon-circle-triangle-s')) {
+               togglerIcon.addClass('ui-icon-circle-triangle-e').removeClass('ui-icon-circle-triangle-s');
+               parentRow.nextUntil('tr.ui-rowgroup-header').hide();
+           }
+           else {
+               togglerIcon.addClass('ui-icon-circle-triangle-s').removeClass('ui-icon-circle-triangle-e');
+               parentRow.nextUntil('tr.ui-rowgroup-header').show();
+           }
+           
+           e.preventDefault();
+        });
     }
 
 });
