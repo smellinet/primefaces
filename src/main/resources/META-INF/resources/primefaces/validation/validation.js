@@ -1142,11 +1142,14 @@ if (window.PrimeFaces) {
             'inputnumber': {
 
                 highlight: function(element) {
-                    element.prev().addClass('ui-state-error');
+                    element.addClass('ui-state-error');
+                    PrimeFaces.validator.Highlighter.highlightLabel(element);
                 },
 
                 unhighlight: function(element) {
-                    element.prev().removeClass('ui-state-error');
+                    element.removeClass('ui-state-error');
+                    PrimeFaces.validator.Highlighter.unhighlightLabel(element);
+
                 }
 
             }
