@@ -2441,8 +2441,8 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
 
         this.itemContainer = this.itemContainerWrapper.children('ul.ui-selectcheckboxmenu-items');
 
-        this.inputs.each(function() {
-            var input = $(this),
+        for(var i = 0; i < this.inputs.length; i++) {
+            var input = this.inputs.eq(i),
             label = input.next(),
             disabled = input.is(':disabled'),
             checked = input.is(':checked'),
@@ -2482,7 +2482,9 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
             $this.itemContainer.attr('role', 'group');
 
             $this.itemContainer.append(item);
-        });
+        }
+        
+        this.items = this.itemContainer.children('li.ui-selectcheckboxmenu-item');
     },
 
     appendPanel: function() {
@@ -2788,13 +2790,14 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
     },
 
     checkAll: function() {
-        var visibleItems = this.itemContainer.children('li.ui-selectcheckboxmenu-item').filter(':visible'),
-        $this = this;
-
-        visibleItems.each(function() {
-            $this.inputs.eq($(this).index()).prop('checked', true).attr('aria-checked', true);
-            $this.check($(this).children('.ui-chkbox').children('.ui-chkbox-box'));
-        });
+        for(var i = 0; i < this.items.length; i++) {
+            var el = this.items.eq(i);
+            
+            if(el.is(':visible')) {
+                this.inputs.eq(i).prop('checked', true).attr('aria-checked', true);
+                this.check(el.children('.ui-chkbox').children('.ui-chkbox-box'));
+            }
+        }
 
         this.check(this.togglerBox);
         
@@ -2807,13 +2810,14 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
     },
 
     uncheckAll: function() {
-        var visibleItems = this.itemContainer.children('li.ui-selectcheckboxmenu-item').filter(':visible'),
-        $this = this;
-
-        visibleItems.each(function() {
-            $this.inputs.eq($(this).index()).prop('checked', false).attr('aria-checked', false);
-            $this.uncheck($(this).children('.ui-chkbox').children('.ui-chkbox-box'));
-        });
+        for(var i = 0; i < this.items.length; i++) {
+            var el = this.items.eq(i);
+            
+            if(el.is(':visible')) {
+                this.inputs.eq(i).prop('checked', false).attr('aria-checked', false);
+                this.uncheck(el.children('.ui-chkbox').children('.ui-chkbox-box'));
+            }
+        }
 
         this.uncheck(this.togglerBox);
 
