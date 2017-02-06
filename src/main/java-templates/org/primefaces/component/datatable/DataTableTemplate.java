@@ -463,6 +463,10 @@ import javax.faces.event.BehaviorEvent;
     }
     
     public UIColumn findColumnInGroup(String clientId, ColumnGroup group) {
+        if(group == null) {
+            return null;
+        }
+        
         FacesContext context = this.getFacesContext();
         
         for(UIComponent row : group.getChildren()) {
