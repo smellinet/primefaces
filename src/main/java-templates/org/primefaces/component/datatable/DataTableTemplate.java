@@ -1312,7 +1312,52 @@ import javax.faces.event.BehaviorEvent;
         }
     }
 
-     String getGroupedColumnIndexes() {
+    public void restoreTableState() {
+        TableState ts = this.getTableState(false);
+        if(ts != null) {
+            if(this.isPaginator()) {
+                this.setFirst(ts.getFirst());
+                int rows = (ts.getRows() == 0) ? this.getRows() : ts.getRows();
+                this.setRows(rows);
+            }
+
+            this.setMultiSortMeta(ts.getMultiSortMeta());
+            this.setValueExpression("sortBy", ts.getSortBy());
+            this.setSortOrder(ts.getSortOrder());
+            this.setSortFunction(ts.getSortFunction());
+            this.setSortField(ts.getSortField());
+
+            if(this.isSelectionEnabled()) {
+                this.selectedRowKeys = ts.getRowKeys();
+            }
+
+            this.setFilterBy(ts.getFilters());
+            this.setGlobalFilter(ts.getGlobalFilterValue());
+        }
+    }
+
+    public TableState getTableState(boolean create) {
+        FacesContext fc = this.getFacesContext();
+        Map<String,Object> sessionMap = fc.getExternalContext().getSessionMap();
+        Map<String,TableState> dtState = (Map) sessionMap.get(Constants.TABLE_STATE);
+        String stateKey = fc.getViewRoot().getViewId() + "_" + this.getClientId(fc);
+        TableState ts;
+
+        if(dtState == null) {
+            dtState = new HashMap<String,TableState>();
+            sessionMap.put(Constants.TABLE_STATE, dtState);
+        }
+
+        ts = dtState.get(stateKey);
+        if(ts == null && create) {
+            ts = new TableState();
+            dtState.put(stateKey, ts);
+        }
+
+        return ts;
+    }
+
+    public String getGroupedColumnIndexes() {
         List<UIColumn> columns = this.getColumns();
         int size = columns.size();
         boolean hasIndex = false;
