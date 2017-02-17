@@ -55,7 +55,7 @@ public class ComponentTraversalUtils {
                 break;
             }
 
-            result = first(type, base);
+            result = first(type, kid);
             if (result != null) {
                 break;
             }
